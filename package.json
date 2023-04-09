@@ -8,5 +8,8 @@
     "postinstall": "wix sync-types",
     "dev": "wix dev",
     "lint": "eslint ."
+  },
+  "dependencies": {
+    "zod": "1.0.10"
   }
 }
