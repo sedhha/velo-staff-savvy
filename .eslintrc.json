@@ -1,3 +1,6 @@
 {
-  "extends": ["plugin:@wix/cli/recommended"]
+  "extends": ["plugin:@wix/cli/recommended"],
+  "rules": {
+    "@wix/cli/no-wix-extraneous-dependencies": 0
+  }
 }
