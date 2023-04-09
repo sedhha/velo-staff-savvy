@@ -1,0 +1,17 @@
+@BASE_URL=https://activityschoolsh2.editorx.io/staff-savvy
+
+POST {{BASE_URL}}/_functions/register_employee
+Content-Type: application/json
+
+{
+    "firstName":"Shivam",
+    "lastName": "Sahil",
+    "emailAddress": "activity.schoolsh2@gmail.com",
+    "orgCode":"fsefesfsefsegbrd",
+    "employeeCode":"csefsdfsefgsefgvsdb",
+    "securePassword":"sdcaedfesfvse"
+}
+
+###
+
+GET {{BASE_URL}}/_functions/ping
