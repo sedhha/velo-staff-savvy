@@ -1,0 +1,22 @@
+import wixUsers from 'wix-users';
+
+export const registerWixUser = (request) => {
+	console.log({ request });
+	wixUsers
+		.register(email, password, {
+			contactInfo: {
+				firstName,
+				lastName,
+				employeeCode,
+			},
+		})
+		.then((res) => {
+			console.log({ firstName, lastName, email, employeeCode, password });
+
+			console.log({ res });
+		})
+		.catch((error) => {
+			console.error({ error });
+		});
+	return { status: 'ok' };
+};

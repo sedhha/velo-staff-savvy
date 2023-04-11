@@ -1,0 +1,59 @@
+import { ok, badRequest, serverError } from 'wix-http-functions';
+import * as z from 'zod';
+import { fetch } from 'wix-fetch';
+import { fetchSecretsFromSecretsManager } from './getSecrets';
+
+const loginFormSchema = z.object({
+	firstName: z.string(),
+	lastName: z.string(),
+	emailAddress: z.string(),
+	orgCode: z.string(),
+	employeeCode: z.string(),
+	securePassword: z.string(),
+});
+
+export async function signUpEmployees(bodyJSON) {
+	try {
+		console.log('Body = ', bodyJSON);
+		const result = loginFormSchema.parse(bodyJSON);
+		const secrets = await fetchSecretsFromSecretsManager();
+
+		if (!secrets.BACKEND_API_KEY || !secrets.SUPABASE_URL)
+			return JSON.stringify({
+				message: 'Backend Server not able to connect with Database',
+			});
+		const url = `https://${secrets.SUPABASE_URL}/auth/individual-signup`;
+		console.log('Result = ', result);
+		return fetch(url, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'x-wix-api-key': secrets.BACKEND_API_KEY,
+			},
+			body: JSON.stringify(result),
+		})
+			.then((res) => {
+				if (res.status === 201)
+					return res
+						.json()
+						.then((data) => ok(data))
+						.catch((error) => {
+							console.log('Error occured at this step-0');
+							return JSON.stringify({ body: error.message });
+						});
+				return res
+					.text()
+					.then((data) => JSON.stringify({ body: data, message: 'Success' }))
+					.catch((error) => {
+						console.log('Error occured at this step-1');
+						return JSON.stringify({ body: error.message });
+					});
+			})
+			.catch((error) => {
+				console.log("Internal Error occured - '" + url + "'");
+				return JSON.stringify({ body: error.message });
+			});
+	} catch (e) {
+		return JSON.stringify({ message: e.message });
+	}
+}
