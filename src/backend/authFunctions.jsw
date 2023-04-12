@@ -49,12 +49,23 @@ export async function signUpEmployees(bodyJSON) {
 							};
 						})
 						.catch((error) => {
-							console.log('Error occured at this step-0');
+							console.error('Error occured at this step-0');
+							return { message: error.message, error: true };
+						});
+				else
+					return res
+						.text()
+						.then((text) => {
+							const { statusCode, message } = JSON.parse(text);
+							return { message: `${statusCode}:${message}`, error: true };
+						})
+						.catch((error) => {
+							console.error('Unable to decode body into text - ', error);
 							return { message: error.message, error: true };
 						});
 			})
 			.catch((error) => {
-				console.log("Internal Error occured - '" + url + "'");
+				console.error("Internal Error occured - '" + url + "'");
 				return { message: error.message, error: true };
 			});
 	} catch (e) {

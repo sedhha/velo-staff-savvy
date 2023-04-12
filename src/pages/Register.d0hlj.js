@@ -13,7 +13,7 @@ const showSuccessMessage = (message) => {
 };
 const showGeneralMessage = (message) => {
 	const infoText = $w('#infoText');
-	infoText.text = message;
+	infoText.html = `<p style='color:black;'>${message}</p>`;
 	infoText.expand();
 };
 
