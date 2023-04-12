@@ -1,4 +1,4 @@
-import { ok, badRequest, serverError } from 'wix-http-functions';
+import { ok, badRequest, created, serverError } from 'wix-http-functions';
 import * as z from 'zod';
 import { fetch } from 'wix-fetch';
 import { fetchSecretsFromSecretsManager } from './getSecrets';
@@ -10,11 +10,11 @@ const loginFormSchema = z.object({
 	orgCode: z.string(),
 	employeeCode: z.string(),
 	securePassword: z.string(),
+	isAdmin: z.boolean().nullable(),
 });
 
 export async function signUpEmployees(bodyJSON) {
 	try {
-		console.log('Body = ', bodyJSON);
 		const result = loginFormSchema.parse(bodyJSON);
 		const secrets = await fetchSecretsFromSecretsManager();
 
@@ -22,8 +22,7 @@ export async function signUpEmployees(bodyJSON) {
 			return JSON.stringify({
 				message: 'Backend Server not able to connect with Database',
 			});
-		const url = `https://${secrets.SUPABASE_URL}/auth/individual-signup`;
-		console.log('Result = ', result);
+		const url = `https://${secrets.SUPABASE_URL}/auth/signup`;
 		return fetch(url, {
 			method: 'POST',
 			headers: {
@@ -36,24 +35,29 @@ export async function signUpEmployees(bodyJSON) {
 				if (res.status === 201)
 					return res
 						.json()
-						.then((data) => ok(data))
+						.then((data) => {
+							if (data.error)
+								return {
+									error: true,
+									message: data.error.message,
+									status: data.error.status,
+								};
+							return {
+								error: false,
+								message: 'User has been successfully added.',
+								status: 201,
+							};
+						})
 						.catch((error) => {
 							console.log('Error occured at this step-0');
-							return JSON.stringify({ body: error.message });
+							return { message: error.message, error: true };
 						});
-				return res
-					.text()
-					.then((data) => JSON.stringify({ body: data, message: 'Success' }))
-					.catch((error) => {
-						console.log('Error occured at this step-1');
-						return JSON.stringify({ body: error.message });
-					});
 			})
 			.catch((error) => {
 				console.log("Internal Error occured - '" + url + "'");
-				return JSON.stringify({ body: error.message });
+				return { message: error.message, error: true };
 			});
 	} catch (e) {
-		return JSON.stringify({ message: e.message });
+		return { message: e.message, error: true };
 	}
 }
