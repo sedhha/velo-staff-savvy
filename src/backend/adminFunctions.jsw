@@ -54,3 +54,102 @@ export async function generateMagicLink(bearerToken) {
 		return { message: e.message, error: true };
 	}
 }
+
+export async function getAllPendingCode(bearerToken) {
+	try {
+		const secrets = await fetchSecretsFromSecretsManager();
+
+		if (!secrets.BACKEND_API_KEY || !secrets.SUPABASE_URL)
+			return JSON.stringify({
+				message: 'Backend Server not able to connect with Database',
+			});
+		const url = `https://${secrets.SUPABASE_URL}/admin/get-pending-magic-links`;
+		return fetch(url, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				'x-wix-api-key': secrets.BACKEND_API_KEY,
+				Authorization: 'bearer ' + bearerToken,
+			},
+		})
+			.then((res) => {
+				if (res.status === 200)
+					return res
+						.json()
+						.then((data) => {
+							return {
+								error: false,
+								data,
+								message: 'User has been successfully added.',
+								status: 201,
+							};
+						})
+						.catch((error) => {
+							console.error(error.message);
+							return { message: error.message, error: true };
+						});
+				else
+					return res
+						.text()
+						.then((text) => {
+							const { statusCode, message } = JSON.parse(text);
+							return { message: `${statusCode}:${message}`, error: true };
+						})
+						.catch((error) => {
+							console.error('Unable to decode body into text - ', error);
+							return { message: error.message, error: true };
+						});
+			})
+			.catch((error) => {
+				console.error("Internal Error occured - '" + url + "'");
+				return { message: error.message, error: true };
+			});
+	} catch (e) {
+		return { message: e.message, error: true };
+	}
+}
+
+export async function revokeAMagicCode(bearerToken, employeeCode) {
+	try {
+		const secrets = await fetchSecretsFromSecretsManager();
+
+		if (!secrets.BACKEND_API_KEY || !secrets.SUPABASE_URL)
+			return JSON.stringify({
+				message: 'Backend Server not able to connect with Database',
+			});
+		const url = `https://${secrets.SUPABASE_URL}/admin/revoke-pending-magic-link?employeeCode=${employeeCode}`;
+		return fetch(url, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				'x-wix-api-key': secrets.BACKEND_API_KEY,
+				Authorization: 'bearer ' + bearerToken,
+			},
+		})
+			.then((res) => {
+				if (res.status === 204)
+					return {
+						error: false,
+						message: 'Revoked token successfully',
+					};
+				else
+					return res
+						.text()
+						.then((text) => {
+							console.log('Error = ', text, res.status);
+							const { statusCode, message } = JSON.parse(text);
+							return { message: `${statusCode}:${message}`, error: true };
+						})
+						.catch((error) => {
+							console.error('Unable to decode body into text - ', error);
+							return { message: error.message, error: true };
+						});
+			})
+			.catch((error) => {
+				console.error("Internal Error occured - '" + url + "'");
+				return { message: error.message, error: true };
+			});
+	} catch (e) {
+		return { message: e.message, error: true };
+	}
+}

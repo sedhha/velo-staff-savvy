@@ -21,7 +21,6 @@ const staticData = [
 $w.onReady(function () {
 	const userDetails = JSON.parse(session.getItem('user'));
 	const sessionDetails = JSON.parse(session.getItem('session'));
-	console.log({ userDetails, sessionDetails });
 	if (!userDetails || !sessionDetails) return wixLocation.to('/login');
 	$w('#tableContent').onItemReady(($item, itemData, index) => {
 		$item('#serialNumberField').src = index;
