@@ -44,6 +44,10 @@ $w.onReady(function () {
 	const sessionDetails = JSON.parse(session.getItem('session'));
 	if (!userDetails || !sessionDetails) return wixLocation.to('/login');
 
+	$w('#nameField').text = `Hello ${
+		userDetails.user_metadata.firstName ?? 'Guest'
+	}`;
+
 	$w('#generateMagicLink').onClick(() => {
 		showGeneralMessage('Generating magic link, please wait...');
 		generateMagicLink(sessionDetails.access_token)

@@ -35,7 +35,7 @@ $w.onReady(function () {
 				if (data.data.data.user) {
 					session.setItem('user', JSON.stringify(data.data.data.user));
 					session.setItem('session', JSON.stringify(data.data.data.session));
-					wixLocation.to('/dashboard');
+					wixLocation.to('/admin-dashboard');
 				}
 
 				return showSuccessMessage(

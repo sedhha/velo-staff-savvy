@@ -18,12 +18,19 @@ const staticData = [
 	},
 ];
 
-$w.onReady(function () {
+const initSession = () => {
 	const userDetails = JSON.parse(session.getItem('user'));
 	const sessionDetails = JSON.parse(session.getItem('session'));
 	if (!userDetails || !sessionDetails) return wixLocation.to('/login');
+	$w('#nameField').text = `Hello ${
+		userDetails.user_metadata.firstName ?? 'Guest'
+	}`;
+};
+
+$w.onReady(function () {
+	initSession();
 	$w('#tableContent').onItemReady(($item, itemData, index) => {
-		$item('#serialNumberField').src = index;
+		$item('#serialNumberField').text = index;
 		$item('#firstNameInput').text = itemData.firstName;
 		$item('#lastNameInput').text = itemData.lastName;
 		$item('#existingPermissionsInput').text = itemData.email;
