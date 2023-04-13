@@ -20,10 +20,7 @@ const showGeneralMessage = (message) => {
 	infoText.expand();
 };
 $w.onReady(function () {
-	console.log('READY---');
-	$w('#button1').onClick(() => console.log('AAAAA'));
 	$w('#loginButton').onClick(() => {
-		console.log('ONCLICK');
 		const email = $w('#emailInput').value;
 		const password = $w('#passwordInput').value;
 
