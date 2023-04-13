@@ -3,7 +3,7 @@ import * as z from 'zod';
 import { fetch } from 'wix-fetch';
 import { fetchSecretsFromSecretsManager } from './getSecrets';
 
-const loginFormSchema = z.object({
+const signupFormSchema = z.object({
 	firstName: z.string(),
 	lastName: z.string(),
 	emailAddress: z.string(),
@@ -13,9 +13,14 @@ const loginFormSchema = z.object({
 	isAdmin: z.boolean().nullable(),
 });
 
+const loginSchema = z.object({
+	email: z.string(),
+	password: z.string(),
+});
+
 export async function signUpEmployees(bodyJSON) {
 	try {
-		const result = loginFormSchema.parse(bodyJSON);
+		const result = signupFormSchema.parse(bodyJSON);
 		const secrets = await fetchSecretsFromSecretsManager();
 
 		if (!secrets.BACKEND_API_KEY || !secrets.SUPABASE_URL)
@@ -56,6 +61,56 @@ export async function signUpEmployees(bodyJSON) {
 					return res
 						.text()
 						.then((text) => {
+							const { statusCode, message } = JSON.parse(text);
+							return { message: `${statusCode}:${message}`, error: true };
+						})
+						.catch((error) => {
+							console.error('Unable to decode body into text - ', error);
+							return { message: error.message, error: true };
+						});
+			})
+			.catch((error) => {
+				console.error("Internal Error occured - '" + url + "'");
+				return { message: error.message, error: true };
+			});
+	} catch (e) {
+		return { message: e.message, error: true };
+	}
+}
+
+export async function loginUser(bodyJSON) {
+	try {
+		const result = loginSchema.parse(bodyJSON);
+		const secrets = await fetchSecretsFromSecretsManager();
+
+		if (!secrets.BACKEND_API_KEY || !secrets.SUPABASE_URL)
+			return {
+				error: true,
+				message: 'Backend Server not able to connect with Database',
+			};
+		const url = `https://${secrets.SUPABASE_URL}/auth/login`;
+		return fetch(url, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'x-wix-api-key': secrets.BACKEND_API_KEY,
+			},
+			body: JSON.stringify(result),
+		})
+			.then((res) => {
+				if (res.status === 200)
+					return res
+						.json()
+						.then((data) => ({ error: false, data }))
+						.catch((error) => {
+							console.error('Error occured at this step-0', error);
+							return { message: error.message, error: true };
+						});
+				else
+					return res
+						.text()
+						.then((text) => {
+							console.log({ text, status: res.status });
 							const { statusCode, message } = JSON.parse(text);
 							return { message: `${statusCode}:${message}`, error: true };
 						})

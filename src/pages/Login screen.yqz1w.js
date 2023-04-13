@@ -1,10 +1,50 @@
-// API Reference: https://www.wix.com/velo/reference/api-overview/introduction
-// “Hello, World!” Example: https://learn-code.wix.com/en/article/1-hello-world
+/* eslint-disable @wix/cli/no-invalid-backend-import */
+import { loginUser } from 'backend/authFunctions.jsw';
+import { session } from 'wix-storage';
+import wixLocation from 'wix-location';
 
+const showErrorMessage = (message) => {
+	const infoText = $w('#infoText');
+	infoText.html = `<p style='color:red;'>${message}</p>`;
+	infoText.expand();
+};
+const showSuccessMessage = (message) => {
+	const infoText = $w('#infoText');
+	infoText.html = `<p style='color:green;'>${message}</p>`;
+	infoText.expand();
+};
+
+const showGeneralMessage = (message) => {
+	const infoText = $w('#infoText');
+	infoText.html = `<p style='color:black;'>${message}</p>`;
+	infoText.expand();
+};
 $w.onReady(function () {
-    // Write your JavaScript here
+	console.log('READY---');
+	$w('#button1').onClick(() => console.log('AAAAA'));
+	$w('#loginButton').onClick(() => {
+		console.log('ONCLICK');
+		const email = $w('#emailInput').value;
+		const password = $w('#passwordInput').value;
 
-    // To select an element by ID use: $w('#elementID')
+		if (!email.length || !password.length)
+			return showErrorMessage('Email or password cannot be empty');
+		showGeneralMessage('Please wait while we sign you in...');
+		loginUser({ email, password })
+			.then((data) => {
+				console.log({ data });
+				if (data.error) return showErrorMessage(data.message);
+				const { firstName } = data.data.data.user.user_metadata;
+				if (data.data.data.user) {
+					session.setItem('user', JSON.stringify(data.data.data.user));
+					session.setItem('session', JSON.stringify(data.data.data.session));
+					wixLocation.to('/dashboard');
+				}
 
-    // Click 'Preview' to run your code
+				return showSuccessMessage(
+					`Hello ${firstName}. Your Signin was successful but we need to link you to dashboard profile pages! Stay tuned :)`
+				);
+			})
+			.catch((error) => showErrorMessage(error.message));
+	});
 });
