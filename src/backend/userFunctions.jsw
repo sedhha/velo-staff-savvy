@@ -1,0 +1,139 @@
+import { fetch } from 'wix-fetch';
+import { fetchSecretsFromSecretsManager } from './getSecrets';
+
+const textResponseHandler = (text) => {
+	console.log('Error here = ', text);
+	const { statusCode, message } = JSON.parse(text);
+	if (message.includes('jwt'))
+		return { message: `${statusCode}:${message}`, error: true, redirect: true };
+	return { message: `${statusCode}:${message}`, error: true };
+};
+
+export async function getFieldValues(bearerToken) {
+	try {
+		const secrets = await fetchSecretsFromSecretsManager();
+
+		if (!secrets.BACKEND_API_KEY || !secrets.SUPABASE_URL)
+			return JSON.stringify({
+				message: 'Backend Server not able to connect with Database',
+			});
+		const url = `https://${secrets.SUPABASE_URL}/user/get-request-categories`;
+		return fetch(url, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				'x-wix-api-key': secrets.BACKEND_API_KEY,
+				Authorization: 'bearer ' + bearerToken,
+			},
+		})
+			.then((res) => {
+				if (res.status === 200)
+					return res
+						.json()
+						.then((data) => {
+							return { data, error: false };
+						})
+						.catch((error) => {
+							console.error(error.message);
+							return { message: error.message, error: true };
+						});
+				else
+					return res
+						.text()
+						.then(textResponseHandler)
+						.catch((error) => {
+							console.error('Unable to decode body into text - ', error);
+							return { message: error.message, error: true };
+						});
+			})
+			.catch((error) => {
+				console.error("Internal Error occured - '" + url + "'");
+				return { message: error.message, error: true };
+			});
+	} catch (e) {
+		return { message: e.message, error: true };
+	}
+}
+
+export async function requestAccess(bearerToken, payload) {
+	try {
+		const secrets = await fetchSecretsFromSecretsManager();
+		if (!secrets.BACKEND_API_KEY || !secrets.SUPABASE_URL)
+			return JSON.stringify({
+				message: 'Backend Server not able to connect with Database',
+			});
+		const url = `https://${secrets.SUPABASE_URL}/user/request-access`;
+		return fetch(url, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'x-wix-api-key': secrets.BACKEND_API_KEY,
+				Authorization: 'bearer ' + bearerToken,
+			},
+			body: JSON.stringify({ payload }),
+		})
+			.then((res) => {
+				if (res.status === 201) return { error: false };
+				else
+					return res
+						.text()
+						.then(textResponseHandler)
+						.catch((error) => {
+							console.error('Unable to decode body into text - ', error);
+							return { message: error.message, error: true };
+						});
+			})
+			.catch((error) => {
+				console.error("Internal Error occured - '" + url + "'");
+				return { message: error.message, error: true };
+			});
+	} catch (e) {
+		return { message: e.message, error: true };
+	}
+}
+
+export async function getRequestHistory(bearerToken) {
+	try {
+		const secrets = await fetchSecretsFromSecretsManager();
+
+		if (!secrets.BACKEND_API_KEY || !secrets.SUPABASE_URL)
+			return JSON.stringify({
+				message: 'Backend Server not able to connect with Database',
+			});
+		const url = `https://${secrets.SUPABASE_URL}/user/get-my-access`;
+		return fetch(url, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				'x-wix-api-key': secrets.BACKEND_API_KEY,
+				Authorization: 'bearer ' + bearerToken,
+			},
+		})
+			.then((res) => {
+				if (res.status === 200)
+					return res
+						.json()
+						.then((data) => {
+							return { data, error: false };
+						})
+						.catch((error) => {
+							console.error(error.message);
+							return { message: error.message, error: true };
+						});
+				else
+					return res
+						.text()
+						.then(textResponseHandler)
+						.catch((error) => {
+							console.error('Unable to decode body into text - ', error);
+							return { message: error.message, error: true };
+						});
+			})
+			.catch((error) => {
+				console.error("Internal Error occured - '" + url + "'");
+				return { message: error.message, error: true };
+			});
+	} catch (e) {
+		return { message: e.message, error: true };
+	}
+}
