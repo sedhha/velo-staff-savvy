@@ -38,17 +38,29 @@ const showGeneralMessage = (message) => {
 	infoText.show();
 };
 
+const alterExistingAccess = (show = true) => {
+	if (!show) {
+		$w('#existingAccessHeader').hide();
+		$w('#existingAccessHeader').collapse();
+		$w('#existingAccessBody').hide();
+		$w('#existingAccessBody').collapse();
+	} else {
+		$w('#existingAccessHeader').show();
+		$w('#existingAccessHeader').expand();
+		$w('#existingAccessBody').show();
+		$w('#existingAccessBody').expand();
+	}
+};
+
 const switchViews = (hideForm = false) => {
 	if (hideForm) {
 		$w('#addAccessContainer').hide();
 		$w('#addAccessContainer').collapse();
-		$w('#existingAccess').show();
-		$w('#existingAccess').expand();
+		alterExistingAccess();
 		$w('#cancelButton').hide();
 		return;
 	}
-	$w('#existingAccess').hide();
-	$w('#existingAccess').collapse();
+	alterExistingAccess(false);
 	$w('#addAccessContainer').show();
 	$w('#addAccessContainer').expand();
 	$w('#cancelButton').show();
