@@ -10,9 +10,14 @@ const initSession = () => {
 	if (!userDetails || !sessionDetails) return wixLocation.to('/login');
 	if (!userDetails.user_metadata.orgAdmin)
 		return wixLocation.to('/dashboard-users');
-	$w('#nameField').text = `Hello ${
-		userDetails.user_metadata.firstName ?? 'Guest'
-	}`;
+	const name = userDetails.user_metadata.firstName ?? 'Guest';
+	$w('#nameField').text = `Hello ${name}, Not ${name}?`;
+	$w('#logOutButton').show();
+	$w('#logOutButton').onClick(() => {
+		session.removeItem('user');
+		session.removeItem('session');
+		return wixLocation.to('/login');
+	});
 	return sessionDetails.access_token;
 };
 
@@ -36,12 +41,16 @@ const showGeneralMessage = (message) => {
 const switchViews = (hideForm = false) => {
 	if (hideForm) {
 		$w('#addAccessContainer').hide();
+		$w('#addAccessContainer').collapse();
 		$w('#existingAccess').show();
+		$w('#existingAccess').expand();
 		$w('#cancelButton').hide();
 		return;
 	}
 	$w('#existingAccess').hide();
+	$w('#existingAccess').collapse();
 	$w('#addAccessContainer').show();
+	$w('#addAccessContainer').expand();
 	$w('#cancelButton').show();
 };
 
@@ -107,9 +116,12 @@ $w.onReady(function () {
 					if (res.error) {
 						showErrorMessage(res.message);
 					} else {
-						switchViews(true);
-						getAccessCB(accessToken);
-						$w('#tableContent').data = [...rootData];
+						getAccessCB(accessToken).then(() => {
+							showSuccessMessage('Successfully added access to the database');
+							switchViews(true);
+							getAccessCB(accessToken);
+							$w('#tableContent').data = [...rootData];
+						});
 					}
 				})
 				.catch((err) => {

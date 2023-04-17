@@ -335,3 +335,101 @@ export async function approveAccessByRequestID(bearerToken, requestID) {
 	}
 }
 
+export async function getOrgSSOToken(bearerToken) {
+	try {
+		const secrets = await fetchSecretsFromSecretsManager();
+
+		if (!secrets.BACKEND_API_KEY || !secrets.SUPABASE_URL)
+			return JSON.stringify({
+				message: 'Backend Server not able to connect with Database',
+			});
+		const url = `https://${secrets.SUPABASE_URL}/admin/get-sso-id`;
+		return fetch(url, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				'x-wix-api-key': secrets.BACKEND_API_KEY,
+				Authorization: 'bearer ' + bearerToken,
+			},
+		})
+			.then((res) => {
+				if (res.status === 200)
+					return res
+						.json()
+						.then((data) => {
+							return {
+								error: false,
+								message: 'Data fetched successfully',
+								data,
+							};
+						})
+						.catch((err) => ({ message: err.message, error: true }));
+				else {
+					console.log('Status = ', res.status);
+					return res
+						.text()
+						.then(textResponseHandler)
+						.catch((error) => {
+							console.error('Unable to decode body into text - ', error);
+							return { message: error.message, error: true };
+						});
+				}
+			})
+			.catch((error) => {
+				console.error("Internal Error occured - '" + url + "'");
+				return { message: error.message, error: true };
+			});
+	} catch (e) {
+		return { message: e.message, error: true };
+	}
+}
+
+export async function generateNewSSOToken(bearerToken) {
+	try {
+		const secrets = await fetchSecretsFromSecretsManager();
+
+		if (!secrets.BACKEND_API_KEY || !secrets.SUPABASE_URL)
+			return JSON.stringify({
+				message: 'Backend Server not able to connect with Database',
+			});
+		const url = `https://${secrets.SUPABASE_URL}/admin/generate-new-sso-id`;
+		return fetch(url, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				'x-wix-api-key': secrets.BACKEND_API_KEY,
+				Authorization: 'bearer ' + bearerToken,
+			},
+		})
+			.then((res) => {
+				if (res.status === 200)
+					return res
+						.json()
+						.then((data) => {
+							return {
+								error: false,
+								message: 'Data fetched successfully',
+								data,
+							};
+						})
+						.catch((err) => ({ message: err.message, error: true }));
+				else {
+					console.log('Status = ', res.status);
+					return res
+						.text()
+						.then(textResponseHandler)
+						.catch((error) => {
+							console.error('Unable to decode body into text - ', error);
+							return { message: error.message, error: true };
+						});
+				}
+			})
+			.catch((error) => {
+				console.error("Internal Error occured - '" + url + "'");
+				return { message: error.message, error: true };
+			});
+	} catch (e) {
+		return { message: e.message, error: true };
+	}
+}
+

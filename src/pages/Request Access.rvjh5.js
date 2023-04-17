@@ -10,9 +10,14 @@ const initSession = () => {
 	if (!userDetails || !sessionDetails) return wixLocation.to('/login');
 	if (userDetails.user_metadata.orgAdmin)
 		return wixLocation.to('/admin-dashboard');
-	$w('#nameField').text = `Hello ${
-		userDetails.user_metadata.firstName ?? 'Guest'
-	}`;
+		const name = userDetails.user_metadata.firstName ?? 'Guest';
+		$w('#nameField').text = `Hello ${name}, Not ${name}?`;
+		$w('#logOutButton').show();
+		$w('#logOutButton').onClick(() => {
+			session.removeItem('user');
+			session.removeItem('session');
+			return wixLocation.to('/login');
+		});
 	return sessionDetails.access_token;
 };
 
